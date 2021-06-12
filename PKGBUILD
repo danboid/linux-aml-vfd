@@ -21,7 +21,8 @@ source=("https://github.com/chewitt/linux/archive/${_commit}.tar.gz"
         '90-linux.hook'
         'add-beelink-device-and-vim3l.patch'
         's912-dmip-mhz.patch'
-        'add-ugoos-device.patch')		
+        'add-ugoos-device.patch'
+        'git://github.com/LibreELEC/linux_openvfd')		
 md5sums=('863ed210417c09eed855e5efa7857af4'
          '8e5b99ff2a14d1737dcd27f65be2e71a'
          'fbb7f2695efe0c83265cad1c5e6f0a81'
@@ -29,7 +30,8 @@ md5sums=('863ed210417c09eed855e5efa7857af4'
          '3dc88030a8f2f5a5f97266d99b149f77'
          '576558e334451596d634fc10bb3b91ee'
          '65152b6703a4851ea8e8a03240edc4b6'
-         '1b92d7617e60d3c525a4b18ab4351185')
+         '1b92d7617e60d3c525a4b18ab4351185'
+         'SKIP')
 
 prepare() {
     #sed -i s/'EXTRAVERSION = -rc7'/'EXTRAVERSION ='/ "${_srcname}"/Makefile
@@ -49,12 +51,17 @@ prepare() {
     # don't run depmod on 'make install'. We'll do this ourselves in packaging
     sed -i '2iexit 0' scripts/depmod.sh
   
- # Add Beelink Device Support patches
+    # Add Beelink Device Support patches
     #patch -Np1 -i "${srcdir}/s912-dmip-mhz.patch"
     patch -Np1 -i "${srcdir}/add-beelink-device-and-vim3l.patch"
     patch -Np1 -i "${srcdir}/add-ugoos-device.patch"
     #make menuconfig
     #cp ./.config "${srcdir}/config"
+    
+    # Add openvfd 
+    mkdir "${srcdir}/linux-${_commit}/drivers/openvfd"
+    cp -r "${srcdir}/linux_openvfd/driver/*" "${srcdir}/linux-${_commit}/drivers/openvfd"
+    echo "obj-m				+= openvfd/" >> "${srcdir}/linux-${_commit}/drivers/Makefile"
 }
 
 build() {
