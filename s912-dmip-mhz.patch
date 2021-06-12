@@ -1,0 +1,82 @@
+From 86886275824dff6dbe2be5fc94bc99826faef912 Mon Sep 17 00:00:00 2001
+From: Christian Hewitt <christianshewitt@gmail.com>
+Date: Tue, 24 Nov 2020 04:12:05 +0000
+Subject: [PATCH] arm64: dts: meson: Add capacity-dmips-mhz attributes to GXM
+
+GXM (S912) is a big-little design with CPUs 0-3 clocked at 1.5GHz
+and CPUs 4-7 at 1.0GHz. Adding capacity-dmips-mhz attributes allows
+the scheduler to factor the different clock speeds into capacity
+calculations and prefer the higher-clocked cluster to improve
+overall performance.
+
+This was inspired by the similar change for G12B [0] boards. The
+diference here is that all cores are A53's so the same dmips-mhz
+value is used.
+
+VIM2:~ # cat /sys/devices/system/cpu/cpu*/cpufreq/scaling_cur_freq
+1512000
+1512000
+1512000
+1512000
+1000000
+1000000
+1000000
+1000000
+
+before:
+
+VIM2:~ # cat /sys/devices/system/cpu/cpu*/cpu_capacity
+1024
+1024
+1024
+1024
+1024
+1024
+1024
+1024
+
+after:
+
+VIM2:~ # cat /sys/devices/system/cpu/cpu*/cpu_capacity
+1024
+1024
+1024
+1024
+677
+677
+677
+677
+
+The after value matches my table-napkin calculation:
+
+(1000000 / 1512000 = 0.661) * 1024 = 677
+
+[0] https://github.com/torvalds/linux/commit/6eeaf4d2452ec8b1ece58776812140734fc2e088
+
+Signed-off-by: Christian Hewitt <christianshewitt@gmail.com>
+---
+From 04fc65d4d7e93bd478d19345c1da770a6d7f181e Mon Sep 17 00:00:00 2001
+From: chewitt <github@chrishewitt.net>
+Date: Sat, 13 Apr 2019 05:41:51 +0000
+Subject: [PATCH] HACK: set meson-gx cma pool to 768MB
+
+This change sets the CMA pool to a larger 768MB! value for vdec use
+
+Signed-off-by: Christian Hewitt <christianshewitt@gmail.com>
+---
+ arch/arm64/boot/dts/amlogic/meson-gx.dtsi | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/arch/arm64/boot/dts/amlogic/meson-gx.dtsi b/arch/arm64/boot/dts/amlogic/meson-gx.dtsi
+index 726b91d3a905a..2ac6eaa451cfd 100644
+--- a/arch/arm64/boot/dts/amlogic/meson-gx.dtsi
++++ b/arch/arm64/boot/dts/amlogic/meson-gx.dtsi
+@@ -47,7 +47,7 @@
+ 		linux,cma {
+ 			compatible = "shared-dma-pool";
+ 			reusable;
+-			size = <0x0 0x10000000>;
++			size = <0x0 0x30000000>;
+ 			alignment = <0x0 0x400000>;
+ 			linux,cma-default;
+ 		};

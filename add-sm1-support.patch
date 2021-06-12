@@ -1,0 +1,1266 @@
+diff --git a/arch/arm64/boot/dts/amlogic/Makefile b/arch/arm64/boot/dts/amlogic/Makefile
+--- a/arch/arm64/boot/dts/amlogic/Makefile	2020-12-19 21:08:04.669556012 +0300
++++ b/arch/arm64/boot/dts/amlogic/Makefile	2020-12-19 21:08:04.669556012 +0300
+@@ -51,3 +48,5 @@
+ dtb-$(CONFIG_ARCH_MESON) += meson-gxm-vega-s96.dtb
+ dtb-$(CONFIG_ARCH_MESON) += meson-gxm-wetek-core2.dtb
+ dtb-$(CONFIG_ARCH_MESON) += meson-a1-ad401.dtb
++dtb-$(CONFIG_ARCH_MESON) += meson-sm1-sei610.dtb
++dtb-$(CONFIG_ARCH_MESON) += meson-sm1-khadas-vim3l.dtb
+
+--- /dev/null	2020-12-19 21:37:10.927702893 +0300
++++ b/arch/arm64/boot/dts/amlogic/meson-sm1.dtsi	2020-12-19 21:37:10.927702893 +0300
+@@ -0,0 +1,528 @@
++// SPDX-License-Identifier: (GPL-2.0+ OR MIT)
++/*
++ * Copyright (c) 2019 BayLibre, SAS
++ * Author: Neil Armstrong <narmstrong@baylibre.com>
++ */
++
++#include "meson-g12-common.dtsi"
++#include <dt-bindings/clock/axg-audio-clkc.h>
++#include <dt-bindings/power/meson-sm1-power.h>
++#include <dt-bindings/reset/amlogic,meson-axg-audio-arb.h>
++#include <dt-bindings/reset/amlogic,meson-g12a-audio-reset.h>
++
++/ {
++	compatible = "amlogic,sm1";
++
++	tdmif_a: audio-controller-0 {
++		compatible = "amlogic,axg-tdm-iface";
++		#sound-dai-cells = <0>;
++		sound-name-prefix = "TDM_A";
++		clocks = <&clkc_audio AUD_CLKID_MST_A_MCLK>,
++			 <&clkc_audio AUD_CLKID_MST_A_SCLK>,
++			 <&clkc_audio AUD_CLKID_MST_A_LRCLK>;
++		clock-names = "mclk", "sclk", "lrclk";
++		status = "disabled";
++	};
++
++	tdmif_b: audio-controller-1 {
++		compatible = "amlogic,axg-tdm-iface";
++		#sound-dai-cells = <0>;
++		sound-name-prefix = "TDM_B";
++		clocks = <&clkc_audio AUD_CLKID_MST_B_MCLK>,
++			 <&clkc_audio AUD_CLKID_MST_B_SCLK>,
++			 <&clkc_audio AUD_CLKID_MST_B_LRCLK>;
++		clock-names = "mclk", "sclk", "lrclk";
++		status = "disabled";
++	};
++
++	tdmif_c: audio-controller-2 {
++		compatible = "amlogic,axg-tdm-iface";
++		#sound-dai-cells = <0>;
++		sound-name-prefix = "TDM_C";
++		clocks = <&clkc_audio AUD_CLKID_MST_C_MCLK>,
++			 <&clkc_audio AUD_CLKID_MST_C_SCLK>,
++			 <&clkc_audio AUD_CLKID_MST_C_LRCLK>;
++		clock-names = "mclk", "sclk", "lrclk";
++		status = "disabled";
++	};
++
++	cpus {
++		#address-cells = <0x2>;
++		#size-cells = <0x0>;
++
++		cpu0: cpu@0 {
++			device_type = "cpu";
++			compatible = "arm,cortex-a55";
++			reg = <0x0 0x0>;
++			enable-method = "psci";
++			next-level-cache = <&l2>;
++			#cooling-cells = <2>;
++		};
++
++		cpu1: cpu@1 {
++			device_type = "cpu";
++			compatible = "arm,cortex-a55";
++			reg = <0x0 0x1>;
++			enable-method = "psci";
++			next-level-cache = <&l2>;
++			#cooling-cells = <2>;
++		};
++
++		cpu2: cpu@2 {
++			device_type = "cpu";
++			compatible = "arm,cortex-a55";
++			reg = <0x0 0x2>;
++			enable-method = "psci";
++			next-level-cache = <&l2>;
++			#cooling-cells = <2>;
++		};
++
++		cpu3: cpu@3 {
++			device_type = "cpu";
++			compatible = "arm,cortex-a55";
++			reg = <0x0 0x3>;
++			enable-method = "psci";
++			next-level-cache = <&l2>;
++			#cooling-cells = <2>;
++		};
++
++		l2: l2-cache0 {
++			compatible = "cache";
++		};
++	};
++
++	cpu_opp_table: opp-table {
++		compatible = "operating-points-v2";
++		opp-shared;
++
++		opp-100000000 {
++			opp-hz = /bits/ 64 <100000000>;
++			opp-microvolt = <730000>;
++		};
++
++		opp-250000000 {
++			opp-hz = /bits/ 64 <250000000>;
++			opp-microvolt = <730000>;
++		};
++
++		opp-500000000 {
++			opp-hz = /bits/ 64 <500000000>;
++			opp-microvolt = <730000>;
++		};
++
++		opp-667000000 {
++			opp-hz = /bits/ 64 <666666666>;
++			opp-microvolt = <750000>;
++		};
++
++		opp-1000000000 {
++			opp-hz = /bits/ 64 <1000000000>;
++			opp-microvolt = <770000>;
++		};
++
++		opp-1200000000 {
++			opp-hz = /bits/ 64 <1200000000>;
++			opp-microvolt = <780000>;
++		};
++
++		opp-1404000000 {
++			opp-hz = /bits/ 64 <1404000000>;
++			opp-microvolt = <790000>;
++		};
++
++		opp-1500000000 {
++			opp-hz = /bits/ 64 <1500000000>;
++			opp-microvolt = <800000>;
++		};
++
++		opp-1608000000 {
++			opp-hz = /bits/ 64 <1608000000>;
++			opp-microvolt = <810000>;
++		};
++
++		opp-1704000000 {
++			opp-hz = /bits/ 64 <1704000000>;
++			opp-microvolt = <850000>;
++		};
++
++		opp-1800000000 {
++			opp-hz = /bits/ 64 <1800000000>;
++			opp-microvolt = <900000>;
++		};
++
++		opp-1908000000 {
++			opp-hz = /bits/ 64 <1908000000>;
++			opp-microvolt = <950000>;
++		};
++	};
++};
++
++&apb {
++	audio: bus@60000 {
++		compatible = "simple-bus";
++		reg = <0x0 0x60000 0x0 0x1000>;
++		#address-cells = <2>;
++		#size-cells = <2>;
++		ranges = <0x0 0x0 0x0 0x60000 0x0 0x1000>;
++
++		clkc_audio: clock-controller@0 {
++			status = "disabled";
++			compatible = "amlogic,sm1-audio-clkc";
++			reg = <0x0 0x0 0x0 0xb4>;
++			#clock-cells = <1>;
++			#reset-cells = <1>;
++
++			clocks = <&clkc CLKID_AUDIO>,
++				 <&clkc CLKID_MPLL0>,
++				 <&clkc CLKID_MPLL1>,
++				 <&clkc CLKID_MPLL2>,
++				 <&clkc CLKID_MPLL3>,
++				 <&clkc CLKID_HIFI_PLL>,
++				 <&clkc CLKID_FCLK_DIV3>,
++				 <&clkc CLKID_FCLK_DIV4>,
++				 <&clkc CLKID_FCLK_DIV5>;
++			clock-names = "pclk",
++				      "mst_in0",
++				      "mst_in1",
++				      "mst_in2",
++				      "mst_in3",
++				      "mst_in4",
++				      "mst_in5",
++				      "mst_in6",
++				      "mst_in7";
++
++			resets = <&reset RESET_AUDIO>;
++		};
++
++		toddr_a: audio-controller@100 {
++			compatible = "amlogic,sm1-toddr",
++				     "amlogic,axg-toddr";
++			reg = <0x0 0x100 0x0 0x2c>;
++			#sound-dai-cells = <0>;
++			sound-name-prefix = "TODDR_A";
++			interrupts = <GIC_SPI 148 IRQ_TYPE_EDGE_RISING>;
++			clocks = <&clkc_audio AUD_CLKID_TODDR_A>;
++			resets = <&arb AXG_ARB_TODDR_A>,
++				 <&clkc_audio AUD_RESET_TODDR_A>;
++			reset-names = "arb", "rst";
++			amlogic,fifo-depth = <8192>;
++			status = "disabled";
++		};
++
++		toddr_b: audio-controller@140 {
++			compatible = "amlogic,sm1-toddr",
++				     "amlogic,axg-toddr";
++			reg = <0x0 0x140 0x0 0x2c>;
++			#sound-dai-cells = <0>;
++			sound-name-prefix = "TODDR_B";
++			interrupts = <GIC_SPI 149 IRQ_TYPE_EDGE_RISING>;
++			clocks = <&clkc_audio AUD_CLKID_TODDR_B>;
++			resets = <&arb AXG_ARB_TODDR_B>,
++				 <&clkc_audio AUD_RESET_TODDR_B>;
++			reset-names = "arb", "rst";
++			amlogic,fifo-depth = <256>;
++			status = "disabled";
++		};
++
++		toddr_c: audio-controller@180 {
++			compatible = "amlogic,sm1-toddr",
++				     "amlogic,axg-toddr";
++			reg = <0x0 0x180 0x0 0x2c>;
++			#sound-dai-cells = <0>;
++			sound-name-prefix = "TODDR_C";
++			interrupts = <GIC_SPI 150 IRQ_TYPE_EDGE_RISING>;
++			clocks = <&clkc_audio AUD_CLKID_TODDR_C>;
++			resets = <&arb AXG_ARB_TODDR_C>,
++				 <&clkc_audio AUD_RESET_TODDR_C>;
++			reset-names = "arb", "rst";
++			amlogic,fifo-depth = <256>;
++			status = "disabled";
++		};
++
++		frddr_a: audio-controller@1c0 {
++			compatible = "amlogic,sm1-frddr",
++				     "amlogic,axg-frddr";
++			reg = <0x0 0x1c0 0x0 0x2c>;
++			#sound-dai-cells = <0>;
++			sound-name-prefix = "FRDDR_A";
++			interrupts = <GIC_SPI 152 IRQ_TYPE_EDGE_RISING>;
++			clocks = <&clkc_audio AUD_CLKID_FRDDR_A>;
++			resets = <&arb AXG_ARB_FRDDR_A>,
++				 <&clkc_audio AUD_RESET_FRDDR_A>;
++			reset-names = "arb", "rst";
++			amlogic,fifo-depth = <512>;
++			status = "disabled";
++		};
++
++		frddr_b: audio-controller@200 {
++			compatible = "amlogic,sm1-frddr",
++				     "amlogic,axg-frddr";
++			reg = <0x0 0x200 0x0 0x2c>;
++			#sound-dai-cells = <0>;
++			sound-name-prefix = "FRDDR_B";
++			interrupts = <GIC_SPI 153 IRQ_TYPE_EDGE_RISING>;
++			clocks = <&clkc_audio AUD_CLKID_FRDDR_B>;
++			resets = <&arb AXG_ARB_FRDDR_B>,
++				 <&clkc_audio AUD_RESET_FRDDR_B>;
++			reset-names = "arb", "rst";
++			amlogic,fifo-depth = <256>;
++			status = "disabled";
++		};
++
++		frddr_c: audio-controller@240 {
++			compatible = "amlogic,sm1-frddr",
++				     "amlogic,axg-frddr";
++			reg = <0x0 0x240 0x0 0x2c>;
++			#sound-dai-cells = <0>;
++			sound-name-prefix = "FRDDR_C";
++			interrupts = <GIC_SPI 154 IRQ_TYPE_EDGE_RISING>;
++			clocks = <&clkc_audio AUD_CLKID_FRDDR_C>;
++			resets = <&arb AXG_ARB_FRDDR_C>,
++				 <&clkc_audio AUD_RESET_FRDDR_C>;
++			reset-names = "arb", "rst";
++			amlogic,fifo-depth = <256>;
++			status = "disabled";
++		};
++
++		arb: reset-controller@280 {
++			status = "disabled";
++			compatible = "amlogic,meson-sm1-audio-arb";
++			reg = <0x0 0x280 0x0 0x4>;
++			#reset-cells = <1>;
++			clocks = <&clkc_audio AUD_CLKID_DDR_ARB>;
++		};
++
++		tdmin_a: audio-controller@300 {
++			compatible = "amlogic,sm1-tdmin",
++				     "amlogic,axg-tdmin";
++			reg = <0x0 0x300 0x0 0x40>;
++			sound-name-prefix = "TDMIN_A";
++			resets = <&clkc_audio AUD_RESET_TDMIN_A>;
++			clocks = <&clkc_audio AUD_CLKID_TDMIN_A>,
++				 <&clkc_audio AUD_CLKID_TDMIN_A_SCLK>,
++				 <&clkc_audio AUD_CLKID_TDMIN_A_SCLK_SEL>,
++				 <&clkc_audio AUD_CLKID_TDMIN_A_LRCLK>,
++				 <&clkc_audio AUD_CLKID_TDMIN_A_LRCLK>;
++			clock-names = "pclk", "sclk", "sclk_sel",
++				      "lrclk", "lrclk_sel";
++			status = "disabled";
++		};
++
++		tdmin_b: audio-controller@340 {
++			compatible = "amlogic,sm1-tdmin",
++				     "amlogic,axg-tdmin";
++			reg = <0x0 0x340 0x0 0x40>;
++			sound-name-prefix = "TDMIN_B";
++			resets = <&clkc_audio AUD_RESET_TDMIN_B>;
++			clocks = <&clkc_audio AUD_CLKID_TDMIN_B>,
++				 <&clkc_audio AUD_CLKID_TDMIN_B_SCLK>,
++				 <&clkc_audio AUD_CLKID_TDMIN_B_SCLK_SEL>,
++				 <&clkc_audio AUD_CLKID_TDMIN_B_LRCLK>,
++				 <&clkc_audio AUD_CLKID_TDMIN_B_LRCLK>;
++			clock-names = "pclk", "sclk", "sclk_sel",
++				      "lrclk", "lrclk_sel";
++			status = "disabled";
++		};
++
++		tdmin_c: audio-controller@380 {
++			compatible = "amlogic,sm1-tdmin",
++				     "amlogic,axg-tdmin";
++			reg = <0x0 0x380 0x0 0x40>;
++			sound-name-prefix = "TDMIN_C";
++			resets = <&clkc_audio AUD_RESET_TDMIN_C>;
++			clocks = <&clkc_audio AUD_CLKID_TDMIN_C>,
++				 <&clkc_audio AUD_CLKID_TDMIN_C_SCLK>,
++				 <&clkc_audio AUD_CLKID_TDMIN_C_SCLK_SEL>,
++				 <&clkc_audio AUD_CLKID_TDMIN_C_LRCLK>,
++				 <&clkc_audio AUD_CLKID_TDMIN_C_LRCLK>;
++			clock-names = "pclk", "sclk", "sclk_sel",
++				      "lrclk", "lrclk_sel";
++			status = "disabled";
++		};
++
++		tdmin_lb: audio-controller@3c0 {
++			compatible = "amlogic,sm1-tdmin",
++				     "amlogic,axg-tdmin";
++			reg = <0x0 0x3c0 0x0 0x40>;
++			sound-name-prefix = "TDMIN_LB";
++			resets = <&clkc_audio AUD_RESET_TDMIN_LB>;
++			clocks = <&clkc_audio AUD_CLKID_TDMIN_LB>,
++				 <&clkc_audio AUD_CLKID_TDMIN_LB_SCLK>,
++				 <&clkc_audio AUD_CLKID_TDMIN_LB_SCLK_SEL>,
++				 <&clkc_audio AUD_CLKID_TDMIN_LB_LRCLK>,
++				 <&clkc_audio AUD_CLKID_TDMIN_LB_LRCLK>;
++			clock-names = "pclk", "sclk", "sclk_sel",
++				      "lrclk", "lrclk_sel";
++			status = "disabled";
++		};
++
++		tdmout_a: audio-controller@500 {
++			compatible = "amlogic,sm1-tdmout";
++			reg = <0x0 0x500 0x0 0x40>;
++			sound-name-prefix = "TDMOUT_A";
++			resets = <&clkc_audio AUD_RESET_TDMOUT_A>;
++			clocks = <&clkc_audio AUD_CLKID_TDMOUT_A>,
++				 <&clkc_audio AUD_CLKID_TDMOUT_A_SCLK>,
++				 <&clkc_audio AUD_CLKID_TDMOUT_A_SCLK_SEL>,
++				 <&clkc_audio AUD_CLKID_TDMOUT_A_LRCLK>,
++				 <&clkc_audio AUD_CLKID_TDMOUT_A_LRCLK>;
++			clock-names = "pclk", "sclk", "sclk_sel",
++				      "lrclk", "lrclk_sel";
++			status = "disabled";
++		};
++
++		tdmout_b: audio-controller@540 {
++			compatible = "amlogic,sm1-tdmout";
++			reg = <0x0 0x540 0x0 0x40>;
++			sound-name-prefix = "TDMOUT_B";
++			resets = <&clkc_audio AUD_RESET_TDMOUT_B>;
++			clocks = <&clkc_audio AUD_CLKID_TDMOUT_B>,
++				 <&clkc_audio AUD_CLKID_TDMOUT_B_SCLK>,
++				 <&clkc_audio AUD_CLKID_TDMOUT_B_SCLK_SEL>,
++				 <&clkc_audio AUD_CLKID_TDMOUT_B_LRCLK>,
++				 <&clkc_audio AUD_CLKID_TDMOUT_B_LRCLK>;
++			clock-names = "pclk", "sclk", "sclk_sel",
++				      "lrclk", "lrclk_sel";
++			status = "disabled";
++		};
++
++		tdmout_c: audio-controller@580 {
++			compatible = "amlogic,sm1-tdmout";
++			reg = <0x0 0x580 0x0 0x40>;
++			sound-name-prefix = "TDMOUT_C";
++			resets = <&clkc_audio AUD_RESET_TDMOUT_C>;
++			clocks = <&clkc_audio AUD_CLKID_TDMOUT_C>,
++				 <&clkc_audio AUD_CLKID_TDMOUT_C_SCLK>,
++				 <&clkc_audio AUD_CLKID_TDMOUT_C_SCLK_SEL>,
++				 <&clkc_audio AUD_CLKID_TDMOUT_C_LRCLK>,
++				 <&clkc_audio AUD_CLKID_TDMOUT_C_LRCLK>;
++			clock-names = "pclk", "sclk", "sclk_sel",
++				      "lrclk", "lrclk_sel";
++			status = "disabled";
++		};
++
++		tohdmitx: audio-controller@744 {
++			compatible = "amlogic,sm1-tohdmitx",
++				     "amlogic,g12a-tohdmitx";
++			reg = <0x0 0x744 0x0 0x4>;
++			#sound-dai-cells = <1>;
++			sound-name-prefix = "TOHDMITX";
++			resets = <&clkc_audio AUD_RESET_TOHDMITX>;
++			status = "disabled";
++		};
++
++		toddr_d: audio-controller@840 {
++			compatible = "amlogic,sm1-toddr",
++				     "amlogic,axg-toddr";
++			reg = <0x0 0x840 0x0 0x2c>;
++			#sound-dai-cells = <0>;
++			sound-name-prefix = "TODDR_D";
++			interrupts = <GIC_SPI 49 IRQ_TYPE_EDGE_RISING>;
++			clocks = <&clkc_audio AUD_CLKID_TODDR_D>;
++			resets = <&arb AXG_ARB_TODDR_D>,
++				 <&clkc_audio AUD_RESET_TODDR_D>;
++			reset-names = "arb", "rst";
++			amlogic,fifo-depth = <256>;
++			status = "disabled";
++		};
++
++		frddr_d: audio-controller@880 {
++			 compatible = "amlogic,sm1-frddr",
++				      "amlogic,axg-frddr";
++			reg = <0x0 0x880 0x0 0x2c>;
++			#sound-dai-cells = <0>;
++			sound-name-prefix = "FRDDR_D";
++			interrupts = <GIC_SPI 50 IRQ_TYPE_EDGE_RISING>;
++			clocks = <&clkc_audio AUD_CLKID_FRDDR_D>;
++			resets = <&arb AXG_ARB_FRDDR_D>,
++				 <&clkc_audio AUD_RESET_FRDDR_D>;
++			reset-names = "arb", "rst";
++			amlogic,fifo-depth = <256>;
++			status = "disabled";
++		};
++	};
++
++	pdm: audio-controller@61000 {
++		compatible = "amlogic,sm1-pdm",
++			     "amlogic,axg-pdm";
++		reg = <0x0 0x61000 0x0 0x34>;
++		#sound-dai-cells = <0>;
++		sound-name-prefix = "PDM";
++		clocks = <&clkc_audio AUD_CLKID_PDM>,
++			 <&clkc_audio AUD_CLKID_PDM_DCLK>,
++			 <&clkc_audio AUD_CLKID_PDM_SYSCLK>;
++		clock-names = "pclk", "dclk", "sysclk";
++		resets = <&clkc_audio AUD_RESET_PDM>;
++		status = "disabled";
++	};
++};
++
++&cecb_AO {
++	compatible = "amlogic,meson-sm1-ao-cec";
++};
++
++&clk_msr {
++	compatible = "amlogic,meson-sm1-clk-measure";
++};
++
++
++&clkc {
++	compatible = "amlogic,sm1-clkc";
++};
++
++&cpu_thermal {
++	cooling-maps {
++		map0 {
++			trip = <&cpu_passive>;
++			cooling-device = <&cpu0 THERMAL_NO_LIMIT THERMAL_NO_LIMIT>,
++					<&cpu1 THERMAL_NO_LIMIT THERMAL_NO_LIMIT>,
++					<&cpu2 THERMAL_NO_LIMIT THERMAL_NO_LIMIT>,
++					<&cpu3 THERMAL_NO_LIMIT THERMAL_NO_LIMIT>;
++		};
++
++		map1 {
++			trip = <&cpu_hot>;
++			cooling-device = <&cpu0 THERMAL_NO_LIMIT THERMAL_NO_LIMIT>,
++					<&cpu1 THERMAL_NO_LIMIT THERMAL_NO_LIMIT>,
++					<&cpu2 THERMAL_NO_LIMIT THERMAL_NO_LIMIT>,
++					<&cpu3 THERMAL_NO_LIMIT THERMAL_NO_LIMIT>;
++		};
++	};
++};
++
++&ethmac {
++	power-domains = <&pwrc PWRC_SM1_ETH_ID>;
++};
++
++&gpio_intc {
++	compatible = "amlogic,meson-sm1-gpio-intc",
++		     "amlogic,meson-gpio-intc";
++};
++
++&pcie {
++	power-domains = <&pwrc PWRC_SM1_PCIE_ID>;
++};
++
++&pwrc {
++	compatible = "amlogic,meson-sm1-pwrc";
++};
++
++&simplefb_cvbs {
++	power-domains = <&pwrc PWRC_SM1_VPU_ID>;
++};
++
++&simplefb_hdmi {
++	power-domains = <&pwrc PWRC_SM1_VPU_ID>;
++};
++
++&vdec {
++	compatible = "amlogic,sm1-vdec";
++};
++
++&vpu {
++	power-domains = <&pwrc PWRC_SM1_VPU_ID>;
++};
++
++&usb {
++	power-domains = <&pwrc PWRC_SM1_USB_ID>;
++};
+
+--- /dev/null	2020-10-03 21:13:06.980000000 +0300
++++ b/arch/arm64/boot/dts/amlogic/meson-sm1-khadas-vim3l.dts	2020-11-14 21:55:51.565598745 +0300
+@@ -0,0 +1,101 @@
++// SPDX-License-Identifier: (GPL-2.0+ OR MIT)
++/*
++ * Copyright (c) 2019 BayLibre, SAS
++ * Author: Neil Armstrong <narmstrong@baylibre.com>
++ */
++
++/dts-v1/;
++
++#include "meson-sm1.dtsi"
++#include "meson-khadas-vim3.dtsi"
++#include <dt-bindings/sound/meson-g12a-tohdmitx.h>
++
++/ {
++	compatible = "khadas,vim3l", "amlogic,sm1";
++	model = "Khadas VIM3L";
++
++	vddcpu: regulator-vddcpu {
++		/*
++		 * Silergy SY8030DEC Regulator.
++		 */
++		compatible = "pwm-regulator";
++
++		regulator-name = "VDDCPU";
++		regulator-min-microvolt = <690000>;
++		regulator-max-microvolt = <1050000>;
++
++		vin-supply = <&vsys_3v3>;
++
++		pwms = <&pwm_AO_cd 1 1250 0>;
++		pwm-dutycycle-range = <100 0>;
++
++		regulator-boot-on;
++		regulator-always-on;
++	};
++};
++
++&cpu0 {
++	cpu-supply = <&vddcpu>;
++	operating-points-v2 = <&cpu_opp_table>;
++	clocks = <&clkc CLKID_CPU_CLK>;
++	clock-latency = <50000>;
++};
++
++&cpu1 {
++	cpu-supply = <&vddcpu>;
++	operating-points-v2 = <&cpu_opp_table>;
++	clocks = <&clkc CLKID_CPU1_CLK>;
++	clock-latency = <50000>;
++};
++
++&cpu2 {
++	cpu-supply = <&vddcpu>;
++	operating-points-v2 = <&cpu_opp_table>;
++	clocks = <&clkc CLKID_CPU2_CLK>;
++	clock-latency = <50000>;
++};
++
++&cpu3 {
++	cpu-supply = <&vddcpu>;
++	operating-points-v2 = <&cpu_opp_table>;
++	clocks = <&clkc CLKID_CPU3_CLK>;
++	clock-latency = <50000>;
++};
++
++&pwm_AO_cd {
++	pinctrl-0 = <&pwm_ao_d_e_pins>;
++	pinctrl-names = "default";
++	clocks = <&xtal>;
++	clock-names = "clkin1";
++	status = "okay";
++};
++
++/*
++ * The VIM3 on-board  MCU can mux the PCIe/USB3.0 shared differential
++ * lines using a FUSB340TMX USB 3.1 SuperSpeed Data Switch between
++ * an USB3.0 Type A connector and a M.2 Key M slot.
++ * The PHY driving these differential lines is shared between
++ * the USB3.0 controller and the PCIe Controller, thus only
++ * a single controller can use it.
++ * If the MCU is configured to mux the PCIe/USB3.0 differential lines
++ * to the M.2 Key M slot, uncomment the following block to disable
++ * USB3.0 from the USB Complex and enable the PCIe controller.
++ * The End User is not expected to uncomment the following except for
++ * testing purposes, but instead rely on the firmware/bootloader to
++ * update these nodes accordingly if PCIe mode is selected by the MCU.
++ */
++/*
++&pcie {
++	status = "okay";
++};
++
++&sd_emmc_a {
++	sd-uhs-sdr50;
++};
++
++&usb {
++	phys = <&usb2_phy0>, <&usb2_phy1>;
++	phy-names = "usb2-phy0", "usb2-phy1";
++};
++ */
++
+
+--- /dev/null	1970-01-01 03:00:04.640000000 +0300
++++ b/arch/arm64/boot/dts/amlogic/meson-sm1-sei610.dts	2020-12-19 21:08:04.669556012 +0300
+@@ -0,0 +1,616 @@
++// SPDX-License-Identifier: (GPL-2.0+ OR MIT)
++/*
++ * Copyright (c) 2019 BayLibre SAS. All rights reserved.
++ */
++
++/dts-v1/;
++
++#include "meson-sm1.dtsi"
++#include <dt-bindings/gpio/gpio.h>
++#include <dt-bindings/input/input.h>
++#include <dt-bindings/gpio/meson-g12a-gpio.h>
++#include <dt-bindings/sound/meson-g12a-tohdmitx.h>
++
++/ {
++	compatible = "seirobotics,sei610", "amlogic,sm1";
++	model = "SEI Robotics SEI610";
++
++	aliases {
++		serial0 = &uart_AO;
++		ethernet0 = &ethmac;
++	};
++
++	mono_dac: audio-codec-0 {
++		compatible = "maxim,max98357a";
++		#sound-dai-cells = <0>;
++		sound-name-prefix = "U16";
++		sdmode-gpios = <&gpio GPIOX_8 GPIO_ACTIVE_HIGH>;
++	};
++
++	dmics: audio-codec-1 {
++		#sound-dai-cells = <0>;
++		compatible = "dmic-codec";
++		num-channels = <2>;
++		wakeup-delay-ms = <50>;
++		status = "okay";
++		sound-name-prefix = "MIC";
++	};
++
++	chosen {
++		stdout-path = "serial0:115200n8";
++	};
++
++	emmc_pwrseq: emmc-pwrseq {
++		compatible = "mmc-pwrseq-emmc";
++		reset-gpios = <&gpio BOOT_12 GPIO_ACTIVE_LOW>;
++	};
++
++	gpio-keys {
++		compatible = "gpio-keys";
++
++		key1 {
++			label = "A";
++			linux,code = <BTN_0>;
++			gpios = <&gpio GPIOH_6 GPIO_ACTIVE_LOW>;
++			interrupt-parent = <&gpio_intc>;
++			interrupts = <34 IRQ_TYPE_EDGE_BOTH>;
++		};
++
++		key2 {
++			label = "B";
++			linux,code = <BTN_1>;
++			gpios = <&gpio GPIOH_7 GPIO_ACTIVE_LOW>;
++			interrupt-parent = <&gpio_intc>;
++			interrupts = <35 IRQ_TYPE_EDGE_BOTH>;
++		};
++
++		key3 {
++			label = "C";
++			linux,code = <BTN_2>;
++			gpios = <&gpio_ao GPIOAO_2 GPIO_ACTIVE_LOW>;
++			interrupt-parent = <&gpio_intc>;
++			interrupts = <2 IRQ_TYPE_EDGE_BOTH>;
++		};
++
++		mic_mute {
++			label = "MicMute";
++			linux,code = <SW_MUTE_DEVICE>;
++			linux,input-type = <EV_SW>;
++			gpios = <&gpio_ao GPIOE_2 GPIO_ACTIVE_LOW>;
++			interrupt-parent = <&gpio_intc>;
++			interrupts = <99 IRQ_TYPE_EDGE_BOTH>;
++		};
++
++		power_key {
++			label = "PowerKey";
++			linux,code = <KEY_POWER>;
++			gpios = <&gpio_ao GPIOAO_3 GPIO_ACTIVE_LOW>;
++			interrupt-parent = <&gpio_intc>;
++			interrupts = <3 IRQ_TYPE_EDGE_BOTH>;
++		};
++	};
++
++	hdmi-connector {
++		compatible = "hdmi-connector";
++		type = "a";
++
++		port {
++			hdmi_connector_in: endpoint {
++				remote-endpoint = <&hdmi_tx_tmds_out>;
++			};
++		};
++	};
++
++	leds {
++		compatible = "gpio-leds";
++
++		led-bluetooth {
++			label = "sei610:blue:bt";
++			gpios = <&gpio GPIOC_7 (GPIO_ACTIVE_LOW | GPIO_OPEN_DRAIN)>;
++			default-state = "off";
++		};
++	};
++
++	pwmleds {
++		compatible = "pwm-leds";
++
++		power {
++			label = "sei610:red:power";
++			pwms = <&pwm_AO_ab 0 30518 0>;
++			max-brightness = <255>;
++			linux,default-trigger = "default-on";
++			active-low;
++		};
++	};
++
++	memory@0 {
++		device_type = "memory";
++		reg = <0x0 0x0 0x0 0x40000000>;
++	};
++
++	ao_5v: regulator-ao_5v {
++		compatible = "regulator-fixed";
++		regulator-name = "AO_5V";
++		regulator-min-microvolt = <5000000>;
++		regulator-max-microvolt = <5000000>;
++		vin-supply = <&dc_in>;
++		regulator-always-on;
++	};
++
++	dc_in: regulator-dc_in {
++		compatible = "regulator-fixed";
++		regulator-name = "DC_IN";
++		regulator-min-microvolt = <5000000>;
++		regulator-max-microvolt = <5000000>;
++		regulator-always-on;
++	};
++
++	emmc_1v8: regulator-emmc_1v8 {
++		compatible = "regulator-fixed";
++		regulator-name = "EMMC_1V8";
++		regulator-min-microvolt = <1800000>;
++		regulator-max-microvolt = <1800000>;
++		vin-supply = <&vddao_3v3>;
++		regulator-always-on;
++	};
++
++	vddao_3v3: regulator-vddao_3v3 {
++		compatible = "regulator-fixed";
++		regulator-name = "VDDAO_3V3";
++		regulator-min-microvolt = <3300000>;
++		regulator-max-microvolt = <3300000>;
++		vin-supply = <&dc_in>;
++		regulator-always-on;
++	};
++
++	/* Used by Tuner, RGB Led & IR Emitter LED array */
++	vddao_3v3_t: regulator-vddao_3v3_t {
++		compatible = "regulator-fixed";
++		regulator-name = "VDDAO_3V3_T";
++		regulator-min-microvolt = <3300000>;
++		regulator-max-microvolt = <3300000>;
++		vin-supply = <&vddao_3v3>;
++		gpio = <&gpio GPIOH_8 GPIO_OPEN_DRAIN>;
++		enable-active-low;
++		regulator-always-on;
++	};
++
++	vddcpu: regulator-vddcpu {
++		/*
++		 * SY8120B1ABC DC/DC Regulator.
++		 */
++		compatible = "pwm-regulator";
++
++		regulator-name = "VDDCPU";
++		regulator-min-microvolt = <690000>;
++		regulator-max-microvolt = <1050000>;
++
++		vin-supply = <&dc_in>;
++
++		pwms = <&pwm_AO_cd 1 1500 0>;
++		pwm-dutycycle-range = <100 0>;
++
++		regulator-boot-on;
++		regulator-always-on;
++	};
++
++	vddio_ao1v8: regulator-vddio_ao1v8 {
++		compatible = "regulator-fixed";
++		regulator-name = "VDDIO_AO1V8";
++		regulator-min-microvolt = <1800000>;
++		regulator-max-microvolt = <1800000>;
++		vin-supply = <&vddao_3v3>;
++		regulator-always-on;
++	};
++
++	reserved-memory {
++		/* TEE Reserved Memory */
++		bl32_reserved: bl32@5000000 {
++			reg = <0x0 0x05300000 0x0 0x2000000>;
++			no-map;
++		};
++	};
++
++	sdio_pwrseq: sdio-pwrseq {
++		compatible = "mmc-pwrseq-simple";
++		reset-gpios = <&gpio GPIOX_6 GPIO_ACTIVE_LOW>;
++		clocks = <&wifi32k>;
++		clock-names = "ext_clock";
++	};
++
++	sound {
++		compatible = "amlogic,axg-sound-card";
++		model = "SM1-SEI610";
++		audio-aux-devs = <&tdmout_a>, <&tdmout_b>,
++				 <&tdmin_a>, <&tdmin_b>;
++		audio-routing = "TDMOUT_A IN 0", "FRDDR_A OUT 0",
++				"TDMOUT_A IN 1", "FRDDR_B OUT 0",
++				"TDMOUT_A IN 2", "FRDDR_C OUT 0",
++				"TDM_A Playback", "TDMOUT_A OUT",
++				"TDMOUT_B IN 0", "FRDDR_A OUT 1",
++				"TDMOUT_B IN 1", "FRDDR_B OUT 1",
++				"TDMOUT_B IN 2", "FRDDR_C OUT 1",
++				"TDM_B Playback", "TDMOUT_B OUT",
++				"TODDR_A IN 4", "PDM Capture",
++				"TODDR_B IN 4", "PDM Capture",
++				"TODDR_C IN 4", "PDM Capture",
++				"TDMIN_A IN 0", "TDM_A Capture",
++				"TDMIN_A IN 3", "TDM_A Loopback",
++				"TDMIN_B IN 0", "TDM_A Capture",
++				"TDMIN_B IN 3", "TDM_A Loopback",
++				"TDMIN_A IN 1", "TDM_B Capture",
++				"TDMIN_A IN 4", "TDM_B Loopback",
++				"TDMIN_B IN 1", "TDM_B Capture",
++				"TDMIN_B IN 4", "TDM_B Loopback",
++				"TODDR_A IN 0", "TDMIN_A OUT",
++				"TODDR_B IN 0", "TDMIN_A OUT",
++				"TODDR_C IN 0", "TDMIN_A OUT",
++				"TODDR_A IN 1", "TDMIN_B OUT",
++				"TODDR_B IN 1", "TDMIN_B OUT",
++				"TODDR_C IN 1", "TDMIN_B OUT";
++
++		assigned-clocks = <&clkc CLKID_MPLL2>,
++				  <&clkc CLKID_MPLL0>,
++				  <&clkc CLKID_MPLL1>;
++		assigned-clock-parents = <0>, <0>, <0>;
++		assigned-clock-rates = <294912000>,
++				       <270950400>,
++				       <393216000>;
++		status = "okay";
++
++		dai-link-0 {
++			sound-dai = <&frddr_a>;
++		};
++
++		dai-link-1 {
++			sound-dai = <&frddr_b>;
++		};
++
++		dai-link-2 {
++			sound-dai = <&frddr_c>;
++		};
++
++		dai-link-3 {
++			sound-dai = <&toddr_a>;
++		};
++
++		dai-link-4 {
++			sound-dai = <&toddr_b>;
++		};
++
++		dai-link-5 {
++			sound-dai = <&toddr_c>;
++		};
++
++		/* internal speaker interface */
++		dai-link-6 {
++			sound-dai = <&tdmif_a>;
++			dai-format = "i2s";
++			dai-tdm-slot-tx-mask-0 = <1 1>;
++			mclk-fs = <256>;
++
++			codec-0 {
++				sound-dai = <&mono_dac>;
++			};
++
++			codec-1 {
++				sound-dai = <&tohdmitx TOHDMITX_I2S_IN_A>;
++			};
++		};
++
++		/* 8ch hdmi interface */
++		dai-link-7 {
++			sound-dai = <&tdmif_b>;
++			dai-format = "i2s";
++			dai-tdm-slot-tx-mask-0 = <1 1>;
++			dai-tdm-slot-tx-mask-1 = <1 1>;
++			dai-tdm-slot-tx-mask-2 = <1 1>;
++			dai-tdm-slot-tx-mask-3 = <1 1>;
++			mclk-fs = <256>;
++
++			codec {
++				sound-dai = <&tohdmitx TOHDMITX_I2S_IN_B>;
++			};
++		};
++
++		/* internal digital mics */
++		dai-link-8 {
++			sound-dai = <&pdm>;
++
++			codec {
++				sound-dai = <&dmics>;
++			};
++		};
++
++		/* hdmi glue */
++		dai-link-9 {
++			sound-dai = <&tohdmitx TOHDMITX_I2S_OUT>;
++
++			codec {
++				sound-dai = <&hdmi_tx>;
++			};
++		};
++	};
++
++	wifi32k: wifi32k {
++		compatible = "pwm-clock";
++		#clock-cells = <0>;
++		clock-frequency = <32768>;
++		pwms = <&pwm_ef 0 30518 0>; /* PWM_E at 32.768KHz */
++	};
++};
++
++&arb {
++	status = "okay";
++};
++
++&cec_AO {
++	pinctrl-0 = <&cec_ao_a_h_pins>;
++	pinctrl-names = "default";
++	status = "disabled";
++	hdmi-phandle = <&hdmi_tx>;
++};
++
++&cecb_AO {
++	pinctrl-0 = <&cec_ao_b_h_pins>;
++	pinctrl-names = "default";
++	status = "okay";
++	hdmi-phandle = <&hdmi_tx>;
++};
++
++&clkc_audio {
++	status = "okay";
++};
++
++&cpu0 {
++	cpu-supply = <&vddcpu>;
++	operating-points-v2 = <&cpu_opp_table>;
++	clocks = <&clkc CLKID_CPU_CLK>;
++	clock-latency = <50000>;
++};
++
++&cpu1 {
++	cpu-supply = <&vddcpu>;
++	operating-points-v2 = <&cpu_opp_table>;
++	clocks = <&clkc CLKID_CPU1_CLK>;
++	clock-latency = <50000>;
++};
++
++&cpu2 {
++	cpu-supply = <&vddcpu>;
++	operating-points-v2 = <&cpu_opp_table>;
++	clocks = <&clkc CLKID_CPU2_CLK>;
++	clock-latency = <50000>;
++};
++
++&cpu3 {
++	cpu-supply = <&vddcpu>;
++	operating-points-v2 = <&cpu_opp_table>;
++	clocks = <&clkc CLKID_CPU3_CLK>;
++	clock-latency = <50000>;
++};
++
++&ethmac {
++	status = "okay";
++	phy-handle = <&internal_ephy>;
++	phy-mode = "rmii";
++};
++
++&frddr_a {
++	status = "okay";
++};
++
++&frddr_b {
++	status = "okay";
++};
++
++&frddr_c {
++	status = "okay";
++};
++
++&hdmi_tx {
++	status = "okay";
++	pinctrl-0 = <&hdmitx_hpd_pins>, <&hdmitx_ddc_pins>;
++	pinctrl-names = "default";
++};
++
++&hdmi_tx_tmds_port {
++	hdmi_tx_tmds_out: endpoint {
++		remote-endpoint = <&hdmi_connector_in>;
++	};
++};
++
++&i2c3 {
++	status = "okay";
++	pinctrl-0 = <&i2c3_sda_a_pins>, <&i2c3_sck_a_pins>;
++	pinctrl-names = "default";
++};
++
++&ir {
++	status = "okay";
++	pinctrl-0 = <&remote_input_ao_pins>;
++	pinctrl-names = "default";
++};
++
++&pdm {
++	pinctrl-0 = <&pdm_din0_z_pins>, <&pdm_dclk_z_pins>;
++	pinctrl-names = "default";
++	status = "okay";
++};
++
++&pwm_AO_ab {
++	status = "okay";
++	pinctrl-0 = <&pwm_ao_a_pins>;
++	pinctrl-names = "default";
++	clocks = <&xtal>;
++	clock-names = "clkin0";
++};
++
++&pwm_AO_cd {
++	pinctrl-0 = <&pwm_ao_d_e_pins>;
++	pinctrl-names = "default";
++	clocks = <&xtal>;
++	clock-names = "clkin1";
++	status = "okay";
++};
++
++&pwm_ef {
++	status = "okay";
++	pinctrl-0 = <&pwm_e_pins>;
++	pinctrl-names = "default";
++	clocks = <&xtal>;
++	clock-names = "clkin0";
++};
++
++&saradc {
++	status = "okay";
++	vref-supply = <&vddio_ao1v8>;
++};
++
++/* SDIO */
++&sd_emmc_a {
++	status = "okay";
++	pinctrl-0 = <&sdio_pins>;
++	pinctrl-1 = <&sdio_clk_gate_pins>;
++	pinctrl-names = "default", "clk-gate";
++	#address-cells = <1>;
++	#size-cells = <0>;
++
++	bus-width = <4>;
++	cap-sd-highspeed;
++	sd-uhs-sdr50;
++	max-frequency = <100000000>;
++
++	non-removable;
++	disable-wp;
++
++	/* WiFi firmware requires power to be kept while in suspend */
++	keep-power-in-suspend;
++
++	mmc-pwrseq = <&sdio_pwrseq>;
++
++	vmmc-supply = <&vddao_3v3>;
++	vqmmc-supply = <&vddio_ao1v8>;
++
++	brcmf: wifi@1 {
++		reg = <1>;
++		compatible = "brcm,bcm4329-fmac";
++	};
++};
++
++/* SD card */
++&sd_emmc_b {
++	status = "okay";
++	pinctrl-0 = <&sdcard_c_pins>;
++	pinctrl-1 = <&sdcard_clk_gate_c_pins>;
++	pinctrl-names = "default", "clk-gate";
++
++	bus-width = <4>;
++	cap-sd-highspeed;
++	max-frequency = <50000000>;
++	disable-wp;
++
++	cd-gpios = <&gpio GPIOC_6 GPIO_ACTIVE_LOW>;
++	vmmc-supply = <&vddao_3v3>;
++	vqmmc-supply = <&vddao_3v3>;
++};
++
++/* eMMC */
++&sd_emmc_c {
++	status = "okay";
++	pinctrl-0 = <&emmc_ctrl_pins>, <&emmc_data_8b_pins>, <&emmc_ds_pins>;
++	pinctrl-1 = <&emmc_clk_gate_pins>;
++	pinctrl-names = "default", "clk-gate";
++
++	bus-width = <8>;
++	cap-mmc-highspeed;
++	mmc-ddr-1_8v;
++	mmc-hs200-1_8v;
++	max-frequency = <200000000>;
++	non-removable;
++	disable-wp;
++
++	mmc-pwrseq = <&emmc_pwrseq>;
++	vmmc-supply = <&vddao_3v3>;
++	vqmmc-supply = <&emmc_1v8>;
++};
++
++&tdmif_a {
++	pinctrl-0 = <&tdm_a_dout0_pins>, <&tdm_a_fs_pins>, <&tdm_a_sclk_pins>;
++	pinctrl-names = "default";
++	status = "okay";
++
++	assigned-clocks = <&clkc_audio AUD_CLKID_TDM_SCLK_PAD0>,
++			  <&clkc_audio AUD_CLKID_TDM_LRCLK_PAD0>;
++	assigned-clock-parents = <&clkc_audio AUD_CLKID_MST_A_SCLK>,
++				 <&clkc_audio AUD_CLKID_MST_A_LRCLK>;
++	assigned-clock-rates = <0>, <0>;
++};
++
++&tdmif_b {
++	status = "okay";
++};
++
++&tdmin_a {
++	status = "okay";
++};
++
++&tdmin_b {
++	status = "okay";
++};
++
++&tdmout_a {
++	status = "okay";
++};
++
++&tdmout_b {
++	status = "okay";
++};
++
++&toddr_a {
++	status = "okay";
++};
++
++&toddr_b {
++	status = "okay";
++};
++
++&toddr_c {
++	status = "okay";
++};
++
++&tohdmitx {
++	status = "okay";
++};
++
++&uart_A {
++	status = "okay";
++	pinctrl-0 = <&uart_a_pins>, <&uart_a_cts_rts_pins>;
++	pinctrl-names = "default";
++	uart-has-rtscts;
++
++	bluetooth {
++		compatible = "brcm,bcm43438-bt";
++		interrupt-parent = <&gpio_intc>;
++		interrupts = <95 IRQ_TYPE_LEVEL_HIGH>;
++		interrupt-names = "host-wakeup";
++		shutdown-gpios = <&gpio GPIOX_17 GPIO_ACTIVE_HIGH>;
++		max-speed = <2000000>;
++		clocks = <&wifi32k>;
++		clock-names = "lpo";
++		vbat-supply = <&vddao_3v3>;
++		vddio-supply = <&vddio_ao1v8>;
++	};
++};
++
++/* Exposed via the on-board USB to Serial FT232RL IC */
++&uart_AO {
++	status = "okay";
++	pinctrl-0 = <&uart_ao_a_pins>;
++	pinctrl-names = "default";
++};
++
++&usb {
++	status = "okay";
++	dr_mode = "otg";
++};
