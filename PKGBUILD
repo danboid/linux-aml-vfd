@@ -59,8 +59,8 @@ prepare() {
     #cp ./.config "${srcdir}/config"
     
     # Add openvfd 
-    mkdir "${srcdir}/linux-${_commit}/drivers/openvfd"
-    cp -r "${srcdir}/linux_openvfd/driver/" "${srcdir}/linux-${_commit}/drivers/openvfd"
+    cp -r "${srcdir}/linux_openvfd/driver/" "${srcdir}/linux-${_commit}/drivers/"
+    mv "${srcdir}/linux-${_commit}/drivers/driver" "${srcdir}/linux-${_commit}/drivers/openvfd"
     echo "obj-m				+= openvfd/" >> "${srcdir}/linux-${_commit}/drivers/Makefile"
 }
 
