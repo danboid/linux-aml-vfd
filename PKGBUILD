@@ -22,7 +22,7 @@ source=("https://github.com/chewitt/linux/archive/${_commit}.tar.gz"
         'add-beelink-device-and-vim3l.patch'
         's912-dmip-mhz.patch'
         'add-ugoos-device.patch'
-        'git://github.com/LibreELEC/linux_openvfd')		
+        'git://github.com/arthur-liberman/linux_openvfd.git')		
 md5sums=('863ed210417c09eed855e5efa7857af4'
          '8e5b99ff2a14d1737dcd27f65be2e71a'
          'fbb7f2695efe0c83265cad1c5e6f0a81'
